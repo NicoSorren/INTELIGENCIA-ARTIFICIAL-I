@@ -35,9 +35,9 @@ class Grafo:
         # Aquí puedes usar la distancia euclidiana, Manhattan, etc.
         # Para simplicidad, vamos a suponer que tenemos un diccionario con valores heurísticos predefinidos
         heuristicas = {
-            'I': 10, 'G': 8, 'P': 7, 'Q': 6, 'R': 5, 'T': 4,
-            'W': 7, 'K': 6, 'M': 3, 'N': 2, 'E': 4, 'F': 0,
-            'C': 5, 'A': 6, 'B': 7, 'D': 8
+            'I': 4, 'G': 6, 'P': 8, 'Q': 8, 'R': 8, 'T': 8,
+            'W': 4, 'K': 4, 'M': 4, 'N': 6, 'E': 8, 'F': 0,
+            'C': 6, 'A': 8, 'B': 8, 'D': 8
         }
         return heuristicas[nodo.nombre]
 
