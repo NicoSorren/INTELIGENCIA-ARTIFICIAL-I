@@ -1,8 +1,8 @@
 ##Búsqueda primero en profundidad
-##Definiciones de clases
 
-class Estado:                                   ##Para representar un estado en el problema, dando el nombre y la lista
-    def __init__(self, nombre, acciones):       ##acciones para dicho estado
+##Definiciones de clases
+class Estado:                                   ##Para representar un estado en el problema, nombre y la lista
+    def __init__(self, nombre, acciones):       ##acciones para estado
         self.nombre = nombre
         self.acciones = acciones
 

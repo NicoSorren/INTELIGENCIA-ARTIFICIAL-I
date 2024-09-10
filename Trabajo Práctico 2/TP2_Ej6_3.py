@@ -153,12 +153,11 @@ if solucion:
     print("Camino encontrado:")
     costo_total = 0  # Inicializa el costo total del camino
     for estado in solucion:
-        print(estado.nombre)
         if estado.nombre != estado_inicial.nombre: ##Encuentra la acción previa (en función del estado anterior y el actual)
             accion_previa = next(accion for accion, siguiente_estado in problema.acciones[estado_anterior.nombre].items() if siguiente_estado == estado)
             costo_total += problema.costos[estado_anterior.nombre][accion_previa]    ##Suma el costo de la acción previa al costo total del camino
         estado_anterior = estado
-    camino = " ".join([estado.nombre for estado in solucion])
+        camino = " ".join([estado.nombre for estado in solucion])
     print(camino)
 else:
     print("No hay solución")
