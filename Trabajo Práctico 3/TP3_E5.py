@@ -1,118 +1,98 @@
 import random
 import math
 
-# Clase que representa el tablero del Ta-te-ti
-class Board:
-    def __init__(self):
-        # Inicializa el tablero con espacios vacíos
-        self.board = [' ' for _ in range(9)]
+# Representación del tablero como una lista
+def imprimir_tablero(tablero):
+    for i in range(0, 9, 3):
+        print(tablero[i:i+3])
 
-    def print_board(self):
-        # Imprime el tablero de forma legible
-        for i in range(3):
-            print(f"{self.board[i*3]} | {self.board[i*3+1]} | {self.board[i*3+2]}")
-            if i < 2:
-                print("---------")
-
-    def make_move(self, position, player):
-        # Realiza un movimiento si la posición está vacía
-        if self.board[position] == ' ':
-            self.board[position] = player
+def verificar_ganador(tablero, jugador):
+    combinaciones_ganadoras = [
+        [0, 1, 2], [3, 4, 5], [6, 7, 8],  # filas
+        [0, 3, 6], [1, 4, 7], [2, 5, 8],  # columnas
+        [0, 4, 8], [2, 4, 6]  # diagonales
+    ]
+    for combinacion in combinaciones_ganadoras:
+        if all(tablero[i] == jugador for i in combinacion):
             return True
-        return False
+    return False
 
-    def check_winner(self):
-        # Condiciones de victoria para el Ta-te-ti
-        win_conditions = [
-            (0, 1, 2), (3, 4, 5), (6, 7, 8),
-            (0, 3, 6), (1, 4, 7), (2, 5, 8),
-            (0, 4, 8), (2, 4, 6)
-        ]
-        for a, b, c in win_conditions:
-            if self.board[a] == self.board[b] == self.board[c] and self.board[a] != ' ':
-                return self.board[a]
-        # Verifica si el tablero está lleno y es un empate
-        if ' ' not in self.board:
-            return 'Tie'
-        return None
+def verificar_empate(tablero):
+    return all(casilla != ' ' for casilla in tablero)
 
-    def get_empty_positions(self):
-        # Devuelve una lista de posiciones vacías en el tablero
-        return [i for i, x in enumerate(self.board) if x == ' ']
+# Función para el movimiento del jugador humano
+def movimiento_humano(tablero):
+    movimiento = int(input("Elige una posición (0-8): "))
+    while tablero[movimiento] != ' ':
+        movimiento = int(input("Posición inválida, elige otra: "))
+    return movimiento
 
-# Clase que implementa el algoritmo de Recocido Simulado
-class SimulatedAnnealing:
-    def __init__(self, temperature, cooling_rate):
-        self.temperature = temperature
-        self.cooling_rate = cooling_rate
+# Función para evaluar el estado del tablero
+def evaluar(tablero, jugador):
+    if verificar_ganador(tablero, jugador):
+        return 10 if jugador == 'O' else -10
+    elif verificar_empate(tablero):
+        return 0
+    else:
+        return None  # No ha terminado el juego
 
-    def objective_function(self, board):
-        # Función objetivo que evalúa el tablero
-        winner = board.check_winner()
-        if winner == 'X':
-            return 1  # X gana
-        elif winner == 'O':
-            return -1  # O gana
-        return 0  # Empate o tablero incompleto
+# Movimiento del recocido simulado (IA)
+def movimiento_recocido_simulado(tablero, temp_inicial):
+    tablero_actual = tablero[:]
+    movimiento_actual = random.choice([i for i in range(9) if tablero[i] == ' '])
+    mejor_movimiento = movimiento_actual
+    mejor_puntuacion = -float('inf')
+    temperatura = temp_inicial
+    
+    for paso in range(100):  # Número máximo de iteraciones
+        temperatura *= 0.99  # Enfriamiento
+        if temperatura < 0.01:
+            break
+        
+        nuevo_movimiento = random.choice([i for i in range(9) if tablero[i] == ' '])
+        tablero_actual[nuevo_movimiento] = 'O'
+        nueva_puntuacion = evaluar(tablero_actual, 'O')
+        
+        if nueva_puntuacion is None:  # Si no se terminó el juego, resetear
+            nueva_puntuacion = 0
+        
+        # Aceptar el nuevo movimiento si es mejor o con una probabilidad si es peor
+        if nueva_puntuacion > mejor_puntuacion or random.random() < math.exp((nueva_puntuacion - mejor_puntuacion) / temperatura):
+            mejor_movimiento = nuevo_movimiento
+            mejor_puntuacion = nueva_puntuacion
+        
+        tablero_actual[nuevo_movimiento] = ' '  # Deshacer el movimiento temporal
 
-    def random_move(self, board):
-        # Realiza un movimiento aleatorio en una posición vacía
-        empty_positions = board.get_empty_positions()
-        return random.choice(empty_positions) if empty_positions else None
+    return mejor_movimiento
 
-    def anneal(self, board, player):
-        # Inicializa el mejor tablero y su puntuación
-        best_board = Board()
-        best_board.board = board.board[:]
-        best_score = self.objective_function(board)
+# Función principal del juego
+def jugar_tateti():
+    tablero = [' '] * 9
+    turno = 'X'  # El humano comienza
 
-        # Proceso de enfriamiento
-        while self.temperature > 0.1:
-            new_board = Board()
-            new_board.board = board.board[:]
-            move = self.random_move(board)
-            if move is not None:
-                new_board.make_move(move, player)
-                new_score = self.objective_function(new_board)
+    temp_inicial = float(input("Ingrese la temperatura inicial para la IA: "))
+    
+    while True:
+        imprimir_tablero(tablero)
+        
+        if turno == 'X':  # Turno del humano
+            movimiento = movimiento_humano(tablero)
+        else:  # Turno de la IA
+            movimiento = movimiento_recocido_simulado(tablero, temp_inicial)
+            print(f"La IA elige la posición: {movimiento}")
+        
+        tablero[movimiento] = turno
+        
+        if verificar_ganador(tablero, turno):
+            imprimir_tablero(tablero)
+            print(f"¡{turno} ha ganado!")
+            break
+        elif verificar_empate(tablero):
+            imprimir_tablero(tablero)
+            print("Es un empate.")
+            break
+        
+        turno = 'O' if turno == 'X' else 'X'  # Cambiar de turno
 
-                # Decide si aceptar el nuevo tablero basado en la función objetivo y la temperatura
-                if new_score > best_score or random.random() < math.exp((new_score - best_score) / self.temperature):
-                    best_board = new_board
-                    best_score = new_score
-
-            # Reduce la temperatura
-            self.temperature *= self.cooling_rate
-
-        return best_board
-
-# Clase que maneja el flujo del juego
-class Game:
-    def __init__(self, initial_temperature=1000, cooling_rate=0.95):
-        self.board = Board()
-        self.sa = SimulatedAnnealing(initial_temperature, cooling_rate)
-
-    def play(self):
-        current_player = 'O'  # El jugador humano comienza como 'O'
-        while self.board.check_winner() is None:
-            self.board.print_board()
-            if current_player == 'O':
-                # Movimiento del jugador humano
-                move = int(input("Enter your move (0-8): "))
-                if self.board.make_move(move, 'O'):
-                    current_player = 'X'
-            else:
-                # Movimiento del algoritmo de Recocido Simulado
-                self.board = self.sa.anneal(self.board, 'X')
-                current_player = 'O'
-
-        self.board.print_board()
-        result = self.board.check_winner()
-        if result == 'Tie':
-            print("It's a tie!")
-        else:
-            print(f"{result} wins!")
-
-# Ejecución del juego
-if __name__ == "__main__":
-    game = Game()
-    game.play()
+# Ejecutar el juego
+jugar_tateti()
