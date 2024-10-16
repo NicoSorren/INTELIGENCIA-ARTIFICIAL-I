@@ -1,0 +1,87 @@
+(defrule inicio
+    =>
+    (printout t "Estado del paciente: ")
+    (assert(est(read)))
+    (assert (status false))
+)
+
+(defrule r1
+    (est ?e1)
+    =>
+    (assert( h2 ok))
+    (if (eq ?e1 avanzado) then
+        (assert(vacuna Aplicar))
+        (assert(ter Curado))
+        (printout t "Accionar: Aplicar - Curado" crlf)
+        (assert (status true))
+        (reset)
+
+    )
+)
+(defrule dosis
+    =>
+    (printout t "Dosis: ")
+    (assert(dosis(read)))
+)
+
+(defrule r2
+    (est ?e2)
+    (h2 ?)
+    (dosis ?d2)
+    =>
+    (assert( h3 ok))
+    (if (eq ?e2 incipiente) then
+        (if (< ?d2 71) then
+            (assert(vacuna Aplicar))
+            (assert(ter Curado))
+            (printout t "Accionar: Aplicar - Curado" crlf)
+            (assert (status true))
+            (reset)            
+        
+        )
+
+    )
+    )
+
+(defrule cond
+    =>
+    (printout t "condicion: ")
+    (assert(cond(read)))
+)
+
+(defrule r3
+    (h3 ?)
+    (est ?e3)
+    (cond ?c3)
+    =>
+    (assert( h4 ok))
+    (if (eq ?e3 terminal) then
+        (if (eq ?c3 debil) then
+            (assert(vacuna Aplicar))
+            (assert(ter Curado))
+            (printout t "Accionar: Aplicar - Curado" crlf)
+            (assert (status true))
+            (reset)
+            
+        )
+  
+    )
+    
+)
+
+(defrule check
+    (cond ?)
+    (est ?)
+    (dosis ?)
+    (h4 ?)
+    (status ?s)
+    =>
+    (if (eq ?s false) then
+        (assert(vacuna No_Aplicar))
+        (assert(ter defuncion))
+        (printout t "Accionar: No aplicar - defuncion" crlf)
+        (reset)     
+    
+        
+)
+)
